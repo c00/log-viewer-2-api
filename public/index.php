@@ -7,6 +7,7 @@ use c00\logViewer\Settings;
 use c00\logViewer\ViewDatabase;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -127,5 +128,26 @@ $app->error(function(Exception $e, $code) use ($app){
             'message' => $e->getMessage()
         ], 500);
 });
+
+//region Preflight
+$app->after(function (Request $request, Response $response) {
+	$response->headers->set('Access-Control-Allow-Origin', '*');
+	$response->headers->set('Access-Control-Allow-Headers', 'X-Auth-Token,Content-Type');
+	$response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+
+	return $response;
+});
+
+$app->options('/{whatever}', function(Request $r) use ($app){
+
+	$response = new \Symfony\Component\HttpFoundation\Response(json_encode(['status'=>'ok']));
+
+	$response->headers->set('Access-Control-Allow-Origin', '*');
+	$response->headers->set('Access-Control-Allow-Headers', 'X-Auth-Token,Content-Type');
+	$response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+
+	return $response;
+})->assert("whatever", ".*");
+//endregion
 
 $app->run();

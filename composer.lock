@@ -44,16 +44,16 @@
         },
         {
             "name": "c00/log",
-            "version": "2.0.2",
+            "version": "2.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/c00/log.git",
-                "reference": "4185c286b7f684ca97fd1d9562eedc949b21333f"
+                "reference": "0bcde616e4ed810fa22eb808fd1b00d468b548af"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/c00/log/zipball/4185c286b7f684ca97fd1d9562eedc949b21333f",
-                "reference": "4185c286b7f684ca97fd1d9562eedc949b21333f",
+                "url": "https://api.github.com/repos/c00/log/zipball/0bcde616e4ed810fa22eb808fd1b00d468b548af",
+                "reference": "0bcde616e4ed810fa22eb808fd1b00d468b548af",
                 "shasum": ""
             },
             "require": {
@@ -80,7 +80,7 @@
                 }
             ],
             "description": "Small logging framework",
-            "time": "2018-12-13T10:24:42+00:00"
+            "time": "2018-12-14T09:20:02+00:00"
         },
         {
             "name": "pimple/pimple",
