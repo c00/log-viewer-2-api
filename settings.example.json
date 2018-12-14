@@ -1,0 +1,18 @@
+{
+    "databases": [
+        {
+            "class": "c00\\log\\channel\\sql\\SqlChannel",
+            "username": "root",
+            "password": "",
+            "host": "localhost",
+            "database": "log_default",
+            "tablePrefix": "log_",
+            "name": "myDatabase",
+            "level": 5,
+            "load": true,
+            "__class": "c00\\log\\channel\\sql\\SqlSettings"
+        }
+    ],
+    "key": "settings",
+    "path": "\/var\/www\/html\/public\/log-viewer-2\/log-viewer-2-api\/public\/..\/"
+}

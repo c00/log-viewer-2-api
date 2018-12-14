@@ -1,0 +1,19 @@
+{
+    "name": "c00/log-viewer",
+    "description": "Tool to view the logs",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Coo",
+            "email": "coo@covle.com"
+        }
+    ],
+    "require": {
+        "c00/common": "0.x",
+        "c00/log": "2.x",
+        "silex/silex": "~2.0"
+    },
+    "autoload": {
+        "psr-4": { "c00\\": "model/" }
+    }
+}
