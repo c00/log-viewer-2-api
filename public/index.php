@@ -36,6 +36,24 @@ $app->get('/configs', function() use ($app, $settings) {
     return $app->json($result);
 });
 
+$app->get('/config/{id}', function($id) use ($app, $settings) {
+	$dbSettings = $settings->databases[$id] ?? null;
+	if (!$dbSettings) throw new Exception("ID $id unknown.");
+
+	$db = ViewDatabase::new($dbSettings);
+
+	//Additional data
+	$data = [
+		"id" => $id,
+		"name" => $dbSettings->name,
+		"dbName" => $dbSettings->database,
+		"firstLogDate" => $db->getFirstLogDate()->toMiliseconds(),
+		"lastLogDate" => $db->getLastLogDate()->toMiliseconds()
+	];
+
+	return $app->json($data);
+});
+
 $app->get('/log/{dbId}/{since}', function($dbId, $since) use ($app, $settings) {
 
     $dbSettings = $settings->databases[$dbId] ?? null;
@@ -64,23 +82,34 @@ $app->get('/log/{dbId}/{since}', function($dbId, $since) use ($app, $settings) {
     return $app->json($result);
 });
 
-$app->get('/log/{since}/{until}', function($since, $until) use ($app) {
-    /** @var Database $db */
-    $db = $app['db'];
+$app->get('/log/{dbId}/{since}/{until}', function(Request $r, $dbId, $since, $until) use ($app, $settings) {
+	$dbSettings = $settings->databases[$dbId] ?? null;
+	if (!$dbSettings) throw new Exception("ID $dbId unknown.");
+
+	$db = ViewDatabase::new($dbSettings);
 
     $since = CovleDate::fromMilliseconds($since);
     $until = CovleDate::fromMilliseconds($until);
 
-    $bags = $db->getBagsSince($since, $until);
+    $page = (int) $r->query->get('page', 0);
+    $perPage = 30;
+    $offset = $page * $perPage;
+
+    $bags = $db->getBagsSince($since, $until, $perPage, $offset);
 
     $log = [];
     foreach ($bags as $bag) {
         $log[] = $bag->toShowable();
     }
 
+    //Calc paging
+	$totalRows = $db->getCount($since, $until);
+
     $result = [
-        'log' => $log
-    ];
+        'log' => $log,
+		'page' => $page,
+		'pageCount' => ceil($totalRows / $perPage)
+	];
 
     return $app->json($result);
 });
