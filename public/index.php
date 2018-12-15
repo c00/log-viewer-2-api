@@ -2,7 +2,7 @@
 
 use c00\common\CovleDate;
 use c00\log\channel\sql\Database;
-use c00\log\LogQuery;
+use c00\log\channel\sql\LogQuery;
 use c00\logViewer\Settings;
 use c00\logViewer\ViewDatabase;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -60,9 +60,10 @@ $app->get('/log/{dbId}/{since}', function($dbId, $since) use ($app, $settings) {
     if (!$dbSettings) throw new Exception("ID $dbId unknown.");
 
     $db = ViewDatabase::new($dbSettings);
+    $q = new LogQuery();
+    $q->since = CovleDate::fromMilliseconds($since);
 
-	$since = CovleDate::fromMilliseconds($since);
-    $bags = $db->getBagsSince($since);
+    $bags = $db->queryBags($q);
     $last = null;
 
     $log = [];
@@ -83,19 +84,21 @@ $app->get('/log/{dbId}/{since}', function($dbId, $since) use ($app, $settings) {
 });
 
 $app->get('/log/{dbId}/{since}/{until}', function(Request $r, $dbId, $since, $until) use ($app, $settings) {
+	//Init DB
 	$dbSettings = $settings->databases[$dbId] ?? null;
 	if (!$dbSettings) throw new Exception("ID $dbId unknown.");
-
 	$db = ViewDatabase::new($dbSettings);
 
-    $since = CovleDate::fromMilliseconds($since);
-    $until = CovleDate::fromMilliseconds($until);
+	$q = new LogQuery();
+	$q->since = CovleDate::fromMilliseconds($since);
+	$q->until = CovleDate::fromMilliseconds($until);
+	$q->page = (int) $r->query->get('page', 0);
 
-    $page = (int) $r->query->get('page', 0);
-    $perPage = 30;
-    $offset = $page * $perPage;
+    //Filters
+	$levels = json_decode($r->query->get('levels', null), true);
+	if ($levels) $q->levels = $levels;
 
-    $bags = $db->getBagsSince($since, $until, $perPage, $offset);
+    $bags = $db->queryBags($q);
 
     $log = [];
     foreach ($bags as $bag) {
@@ -103,46 +106,13 @@ $app->get('/log/{dbId}/{since}/{until}', function(Request $r, $dbId, $since, $un
     }
 
     //Calc paging
-	$totalRows = $db->getCount($since, $until);
+	$totalRows = $db->getCount($q->since, $q->until);
 
     $result = [
         'log' => $log,
-		'page' => $page,
-		'pageCount' => ceil($totalRows / $perPage)
+		'page' => $q->page,
+		'pageCount' => ceil($totalRows / $q->perPage)
 	];
-
-    return $app->json($result);
-});
-
-$app->post('/log-query', function() use ($app) {
-    $body = json_decode(file_get_contents("php://input"), true);
-
-    $q = new LogQuery();
-
-    if (isset($body['since'])) $q->since = CovleDate::fromMilliseconds($body['since']);
-    if (isset($body['until'])) $q->until = CovleDate::fromMilliseconds($body['until']);
-    $q->includeLevels = $body['levels'] ?? null;
-    $q->page = $body['page'] ?? 0;
-
-    /** @var Database $db */
-    $db = $app['db'];
-
-    $bags = $db->queryBags($q);
-
-    $last = null;
-    $log = [];
-    foreach ($bags as $bag) {
-        if (!$last) $last = $bag->date;
-
-        $log[] = $bag->toShowable();
-    }
-
-    if (!$last) $last = $q->since;
-
-    $result = [
-        'log' => $log,
-        'until' => $last->toMiliseconds()
-    ];
 
     return $app->json($result);
 });
