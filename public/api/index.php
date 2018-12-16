@@ -1,7 +1,6 @@
 <?php
 
 use c00\common\CovleDate;
-use c00\log\channel\sql\Database;
 use c00\log\channel\sql\LogQuery;
 use c00\logViewer\Settings;
 use c00\logViewer\ViewDatabase;
@@ -9,10 +8,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 //Setup log
-$settings = new Settings('settings', __DIR__ . "/../");
+$settings = new Settings('settings', __DIR__ . "/../../");
 $settings->load();
 
 //setup Routing
