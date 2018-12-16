@@ -19,6 +19,14 @@ class ViewDatabase extends Database {
 		return $db;
 	}
 
+	public function getTags() {
+		$q = Qry::select('tag', true)
+			->from($this->getTable(self::TABLE_ITEM))
+			;
+
+		return $this->getValues($q);
+	}
+
 	public function getCount(CovleDate $since, CovleDate $until = null): int
 	{
 		$q = Qry::select()

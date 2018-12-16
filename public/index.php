@@ -54,6 +54,17 @@ $app->get('/config/{id}', function($id) use ($app, $settings) {
 	return $app->json($data);
 });
 
+$app->get('/tags/{id}', function($id) use ($app, $settings) {
+	$dbSettings = $settings->databases[$id] ?? null;
+	if (!$dbSettings) throw new Exception("ID $id unknown.");
+
+	$db = ViewDatabase::new($dbSettings);
+
+	$tags = $db->getTags();
+
+	return $app->json($tags);
+});
+
 $app->get('/log/{dbId}/{since}', function($dbId, $since) use ($app, $settings) {
 
     $dbSettings = $settings->databases[$dbId] ?? null;
@@ -73,7 +84,7 @@ $app->get('/log/{dbId}/{since}', function($dbId, $since) use ($app, $settings) {
         $log[] = $bag->toShowable();
     }
 
-    if (!$last) $last = $since;
+    if (!$last) $last = $q->since;
 
     $result = [
         'log' => $log,
@@ -97,6 +108,8 @@ $app->get('/log/{dbId}/{since}/{until}', function(Request $r, $dbId, $since, $un
     //Filters
 	$levels = json_decode($r->query->get('levels', null), true);
 	if ($levels) $q->levels = $levels;
+	$tags = json_decode($r->query->get('tags', null), true);
+	if ($tags) $q->tags = $tags;
 
     $bags = $db->queryBags($q);
 
@@ -111,7 +124,9 @@ $app->get('/log/{dbId}/{since}/{until}', function(Request $r, $dbId, $since, $un
     $result = [
         'log' => $log,
 		'page' => $q->page,
-		'pageCount' => ceil($totalRows / $q->perPage)
+		'pageCount' => ceil($totalRows / $q->perPage),
+		'query' => $q,
+		'tags' => $r->query->get('tags', null)
 	];
 
     return $app->json($result);
