@@ -118,14 +118,12 @@ $app->get('/log/{dbId}/{since}/{until}', function(Request $r, $dbId, $since, $un
     }
 
     //Calc paging
-	$totalRows = $db->getCount($q->since, $q->until);
+	$totalRows = $db->getCount($q);
 
     $result = [
         'log' => $log,
 		'page' => $q->page,
 		'pageCount' => ceil($totalRows / $q->perPage),
-		'query' => $q,
-		'tags' => $r->query->get('tags', null)
 	];
 
     return $app->json($result);

@@ -5,7 +5,10 @@ namespace c00\logViewer;
 
 use c00\common\CovleDate;
 use c00\log\channel\sql\Database;
+use c00\log\channel\sql\LogQuery;
 use c00\log\channel\sql\SqlSettings;
+use c00\log\LogBag;
+use c00\log\LogItem;
 use c00\QueryBuilder\Qry;
 
 class ViewDatabase extends Database {
@@ -27,15 +30,28 @@ class ViewDatabase extends Database {
 		return $this->getValues($q);
 	}
 
-	public function getCount(CovleDate $since, CovleDate $until = null): int
+	public function getCount(LogQuery $query): int
 	{
 		$q = Qry::select()
-			->count('id')
-			->from($this->getTable(self::TABLE_BAG))
-			->where('date', '>', $since->toSeconds());
+			->count('b.id', null, 'DISTINCT')
+			->from(['b' => $this->getTable(self::TABLE_BAG)])
+			->join(['i' => $this->getTable(self::TABLE_ITEM)], 'b.id', '=', 'i.bagId')
+			;
 
-		if ($until) {
-			$q->where('date', '<', $until->toSeconds());
+		if ($query->since){
+			$q->where('b.date', '>', $query->since->toSeconds());
+		}
+
+		if ($query->until){
+			$q->where('b.date', '<', $query->until->toSeconds());
+		}
+
+		if ( count($query->levels) > 0){
+			$q->whereIn('i.level', $query->levels);
+		}
+
+		if (count($query->tags) > 0) {
+			$q->whereIn('i.tag', $query->tags);
 		}
 
 		return (int) $this->getValue($q);
