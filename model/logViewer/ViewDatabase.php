@@ -7,8 +7,6 @@ use c00\common\CovleDate;
 use c00\log\channel\sql\Database;
 use c00\log\channel\sql\LogQuery;
 use c00\log\channel\sql\SqlSettings;
-use c00\log\LogBag;
-use c00\log\LogItem;
 use c00\QueryBuilder\Qry;
 
 class ViewDatabase extends Database {
@@ -28,6 +26,43 @@ class ViewDatabase extends Database {
 			;
 
 		return $this->getValues($q);
+	}
+
+	public function getLevelStats(LogQuery $query) {
+		$q = Qry::select('i.level')
+				->count('i.id', 'itemCount', 'DISTINCT')
+				->count('b.id', 'bagCount', 'DISTINCT')
+				->from(['b' => $this->getTable(self::TABLE_BAG)])
+				->join(['i' => $this->getTable(self::TABLE_ITEM)], 'b.id', '=', 'i.bagId')
+			->groupBy('i.level')
+		;
+
+		if ($query->since) $q->where('b.date', '>', $query->since->toSeconds());
+		if ($query->until) $q->where('b.date', '<', $query->until->toSeconds());
+
+		if ($query->levels) $q->whereIn('i.level', $query->levels);
+
+
+		return $this->getRows($q);
+
+	}
+
+	public function getUrlStats(LogQuery $query) {
+		$q = Qry::select(['b.verb', 'b.url', 'i.level'])
+				->count('i.id', 'itemCount', 'DISTINCT')
+				->count('b.id', 'bagCount', 'DISTINCT')
+				->from(['b' => $this->getTable(self::TABLE_BAG)])
+				->join(['i' => $this->getTable(self::TABLE_ITEM)], 'b.id', '=', 'i.bagId')
+				->groupBy(['b.verb', 'b.url', 'i.level'])
+		;
+
+		if ($query->since) $q->where('b.date', '>', $query->since->toSeconds());
+		if ($query->until) $q->where('b.date', '<', $query->until->toSeconds());
+
+		if ($query->levels) $q->whereIn('i.level', $query->levels);
+
+		return $this->getRows($q);
+
 	}
 
 	public function getCount(LogQuery $query): int

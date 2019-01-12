@@ -2,6 +2,7 @@
 
 use c00\common\CovleDate;
 use c00\log\channel\sql\LogQuery;
+use c00\log\Log;
 use c00\logViewer\Settings;
 use c00\logViewer\ViewDatabase;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -127,6 +128,38 @@ $app->get('/log/{dbId}/{since}/{until}', function(Request $r, $dbId, $since, $un
 	];
 
     return $app->json($result);
+});
+
+$app->get('/stats/{dbId}/{since}/{until}', function(Request $r, $dbId, $since, $until) use ($app, $settings) {
+
+	$dbSettings = $settings->databases[$dbId] ?? null;
+	if (!$dbSettings) throw new Exception("ID $dbId unknown.");
+
+
+	$db = ViewDatabase::new($dbSettings);
+	$db->debug = true;
+	$q = new LogQuery();
+	$q->since = CovleDate::fromMilliseconds($since);
+	$q->until = CovleDate::fromMilliseconds($until);
+
+	$levels = json_decode($r->query->get('levels', null), true);
+	if ($levels) $q->levels = $levels;
+	$tags = json_decode($r->query->get('tags', null), true);
+	if ($tags) $q->tags = $tags;
+
+
+	$levelStats = $db->getLevelStats($q);
+
+	//For url Stats, only do errors and warnings
+	$q->levels = [Log::ERROR, Log::WARNING];
+	$urlStats = $db->getUrlStats($q);
+
+	$result = [
+		'levelStats' => $levelStats,
+		'urlStats' => $urlStats
+	];
+
+	return $app->json($result);
 });
 
 //Error handling
