@@ -10,6 +10,7 @@ use c00\log\channel\sql\SqlSettings;
 use c00\QueryBuilder\Qry;
 
 class ViewDatabase extends Database {
+	const TABLE_BAG_EXTENDED = 'bag_extended';
 
 	public static function new(SqlSettings $config): ViewDatabase
 	{
@@ -18,6 +19,15 @@ class ViewDatabase extends Database {
 		if (!$db->isConnected()) throw LogViewerException::new("Can't connect to database");
 
 		return $db;
+	}
+
+	private function checkView() {
+		if (!$this->hasTable($this->getTable(self::TABLE_BAG_EXTENDED))) {
+			//Create view
+
+			$sql = "CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `log_v2_bag_extended` AS select `log_v2_bag`.`id` AS `id`,`log_v2_bag`.`ip` AS `ip`,`log_v2_bag`.`verb` AS `verb`,`log_v2_bag`.`userId` AS `userId`,`log_v2_bag`.`date` AS `date`,substring_index(`log_v2_bag`.`url`,'?',1) AS `url`,if(locate('?',`log_v2_bag`.`url`) = 0,NULL,substring_index(`log_v2_bag`.`url`,'?',-1)) AS `path` from `log_v2_bag`;";
+			$this->db->exec($sql);
+		}
 	}
 
 	public function getTags() {
@@ -48,10 +58,12 @@ class ViewDatabase extends Database {
 	}
 
 	public function getUrlStats(LogQuery $query) {
+		$this->checkView();
+
 		$q = Qry::select(['b.verb', 'b.url', 'i.level'])
 				->count('i.id', 'itemCount', 'DISTINCT')
 				->count('b.id', 'bagCount', 'DISTINCT')
-				->from(['b' => $this->getTable(self::TABLE_BAG)])
+				->from(['b' => $this->getTable(self::TABLE_BAG_EXTENDED)])
 				->join(['i' => $this->getTable(self::TABLE_ITEM)], 'b.id', '=', 'i.bagId')
 				->groupBy(['b.verb', 'b.url', 'i.level'])
 		;
