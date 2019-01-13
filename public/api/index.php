@@ -24,7 +24,12 @@ $app->before(function(Request $r) use ($app, $settings){
 
 //Routes
 $app->get('/', function() use ($app) {
-    return $app->json("ok");
+	
+    return $app->json([
+		"version" => \c00\GitHelper::gitVersion(),
+		"date" => \c00\GitHelper::gitDateString(),
+		"result" => "ok"
+	]);
 });
 
 $app->get('/configs', function() use ($app, $settings) {
