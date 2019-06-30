@@ -2,6 +2,6 @@
 
 ## Docker
 
-The docker image's entrypoint is under `/app/public/index.php`. Settings should be placed at `/app/settings.json`.
+The docker image's entrypoint is under `/app/public/api/index.php`. Settings should be placed at `/app/settings.json`.
 
-Docker compose example can be found in the front-end repo.
+Docker compose example with front-end and back-end can be found in the front-end repo.
