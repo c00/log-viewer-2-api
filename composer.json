@@ -12,7 +12,8 @@
         "c00/common": "0.x",
         "c00/log": "2.x",
         "silex/silex": "~2.0",
-        "ext-json": "*"
+        "ext-json": "*",
+        "ext-pdo": "*"
     },
     "autoload": {
         "psr-4": { "c00\\": "model/" }
