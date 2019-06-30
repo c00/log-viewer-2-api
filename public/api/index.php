@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 //Setup log
+Log::init();
 $settings = new Settings('settings', __DIR__ . "/../../");
 $settings->load();
 
