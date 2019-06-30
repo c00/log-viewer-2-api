@@ -1,0 +1,42 @@
+{
+  "databases": [
+    {
+      "class": "c00\\log\\channel\\sql\\SqlChannel",
+      "username": "coo",
+      "password": "123",
+      "host": "db",
+      "database": "cirque",
+      "tablePrefix": "log_v2_",
+      "name": "Cirquel Dev",
+      "level": 5,
+      "load": true,
+      "__class": "c00\\log\\channel\\sql\\SqlSettings"
+    },
+    {
+      "class": "c00\\log\\channel\\sql\\SqlChannel",
+      "username": "coo",
+      "password": "123",
+      "host": "db",
+      "database": "test_log_v2",
+      "tablePrefix": "log_",
+      "name": "Test database",
+      "level": 5,
+      "load": true,
+      "__class": "c00\\log\\channel\\sql\\SqlSettings"
+    },
+    {
+      "class": "c00\\log\\channel\\sql\\SqlChannel",
+      "username": "coo",
+      "password": "notthepassword",
+      "host": "db",
+      "database": "notadb",
+      "tablePrefix": "log_v2_",
+      "name": "Deliberately wrong config",
+      "level": 5,
+      "load": true,
+      "__class": "c00\\log\\channel\\sql\\SqlSettings"
+    }
+  ],
+  "key": "settings",
+  "path": "\/var\/www\/html\/public\/log-viewer-2\/log-viewer-2-api\/public\/..\/"
+}
